@@ -1,0 +1,24 @@
+FONTLOG for Fase Pressure
+
+Basic font information
+----------------------
+Fase Pressure is a modified version of Anybody, released under the SIL Open Font License 1.1. Its targets use measurements of the open base at wght 900 / wdth 110 plus explicit designer choices: uppercase straight and round widths -2%, narrow +1%, wide -3%, diagonal -1%, and tracking -2 units per side. The supplied warped screenshot could not be measured reliably; no reference-derived geometry is claimed. Every outline comes from the open base. No outline, point or kerning pair was taken from any other font.
+
+Use: display. Scripts: latin.
+
+Files: ttf/FasePressure-Black.ttf, webfonts/FasePressure-Black.woff2, OFL.txt, FONTLOG.txt, fonts.css, README.md
+
+ChangeLog
+---------
+2026-11-19 (version 1.000)
+  1. Base: Anybody[wdth,wght].ttf, axes {'wdth': (50.0, 100.0, 150.0), 'wght': (100.0, 100.0, 900.0)}.
+  2. Black: y coordinates from {'wght': 899.22}; x per width class from its own location, factors {'lc_straight': 1.0006, 'lc_bowl': 1.0006, 'lc_round': 1.0006, 'lc_diagonal': 1.0006, 'lc_narrow': 1.0007, 'uc_straight': 1.0013, 'uc_round': 1.0018, 'uc_diagonal': 1.0012, 'uc_wide': 1.0012, 'uc_narrow': 1.0001, 'figures': 1.0007}.
+     Width fit: 1 pass(es), error % by class {'lc_straight': 0.0, 'lc_bowl': -0.0, 'lc_round': 0.001, 'lc_diagonal': -0.0, 'lc_narrow': 0.023, 'uc_straight': 0.242, 'uc_round': 0.271, 'uc_diagonal': 0.257, 'uc_wide': 0.174, 'uc_narrow': 0.294, 'figures': -0.005}.
+  3. Spacing (FasePressure-Black.fit.ttf): side moves {'lc': {'S': -0.1, 'R': 0.1, 'O': -0.0}, 'uc': {'S': -0.1, 'R': -0.7, 'O': -0.4}}, track -2, 9 pairs opened by the collision guard.
+  4. Renamed to Fase Pressure, trademark record removed, OFL notice set, overlaps retained with TrueType rendering flags (skia-pathops unavailable), variation tables removed, spacing accents classed as base glyphs in GDEF.
+
+Acknowledgements
+----------------
+Original design: Tyler Finck.
+Original copyright: Copyright 2020 The Anybody Project Authors (https://github.com/Etcetera-Type-Co/Anybody)
+Modifications: FASE Studio.

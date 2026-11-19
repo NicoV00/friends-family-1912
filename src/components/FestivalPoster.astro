@@ -1,0 +1,37 @@
+---
+import lettering from '../lib/lettering.json';
+interface Props { lineup?: { name: string; format: string }[] }
+const { lineup=[] }=Astro.props;
+---
+<div class="festival-poster" id="festival-poster">
+  <div class="poster-kicker"><span>SÁBADO<br />19 DICIEMBRE 2026</span><span>EMILE<br />MONTEVIDEO, UY</span></div>
+  <div class="pressure-lockup">
+    <svg class="main-lettering" viewBox="0 0 1440 650" preserveAspectRatio="none" role="img" aria-label="Emile, Montevideo">
+      <g class="oval-lockup">
+        <ellipse class="brand-oval" cx="720" cy="204" rx="640" ry="186" />
+        <g class="eye-word"><g transform="translate(80 18) scale(1.066667 1.127273)"><path class="oval-lettering" d={lettering.fase.path} /></g></g>
+        <g class="eye-iris" aria-hidden="true">
+          <g transform="translate(720 204) scale(1 1.12)">
+            <circle r="151" fill="#e8eee9" stroke="var(--ink)" stroke-width="7" />
+            <g class="iris-pattern">
+              <circle r="119" fill="#5369e2" stroke="var(--ink)" stroke-width="7" />
+              {Array.from({length:32},(_,i)=><path d="M -3 -57 L -10 -114 Q 0 -120 10 -114 L 3 -57 Z" transform={`rotate(${i*11.25})`} fill={i%2?'#b8fb7c':'#393838'} opacity={i%2?'.72':'.48'} />)}
+              <circle r="70" fill="none" stroke="#b8fb7c" stroke-width="5" stroke-dasharray="5 7" />
+            </g>
+            <circle r="54" fill="var(--ink)" />
+            <circle cx="-33" cy="-38" r="17" fill="#f6f7ee" />
+            <circle cx="-47" cy="-12" r="7" fill="#f6f7ee" />
+          </g>
+        </g>
+      </g>
+      <g transform="translate(20 369)"><g class="concave-lockup"><path class="concave-lettering" d={lettering.montevideo.path} /></g></g>
+    </svg>
+  </div>
+  {lineup.length>0 && <div class="poster-lineup">{lineup.map(artist=><span>{artist.name.toUpperCase()}{artist.format==='live' && <small>LIVE</small>}</span>)}</div>}
+  <div class="poster-base">
+    <div class="date-seal" aria-label="19 de diciembre"><svg viewBox="0 0 500 180" aria-hidden="true"><ellipse cx="250" cy="90" rx="248" ry="88"/><path d={lettering.date.path}/></svg></div>
+    <span class="poster-base-city">EMILE<br />MONTEVIDEO</span>
+    <span class="poster-base-year">SÁBADO<br />2026</span>
+  </div>
+  <canvas class="pixel-overlay" aria-hidden="true"></canvas>
+</div>

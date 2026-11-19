@@ -1,0 +1,85 @@
+import { chromium } from 'playwright';
+import { mkdir } from 'node:fs/promises';
+
+await mkdir('.qa', { recursive: true });
+const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const errors = [];
+try {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('http://127.0.0.1:4321/', { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => [...document.querySelectorAll('[data-warp] canvas')].every(canvas => canvas.dataset.ready === 'true'));
+  await page.waitForFunction(() => document.querySelector('.pixel-overlay')?.dataset.ready === 'true');
+  await page.waitForFunction(() => document.querySelector('#festival-poster')?.dataset.assembled === 'true');
+  const report = { title: await page.title(), viewports: [], motion: {} };
+  for (const width of [360, 390, 768, 1440, 1920]) {
+    await page.setViewportSize({ width, height: width < 800 ? 844 : 1000 });
+    await page.waitForTimeout(500);
+    const metrics = await page.evaluate(() => ({ viewport: innerWidth, width: document.documentElement.scrollWidth, faq: !!document.querySelector('.faq') }));
+    if (metrics.width > width) throw new Error(`Overflow at ${width}: ${metrics.width}`);
+    report.viewports.push(metrics);
+    if (width === 390 || width === 1440) await page.screenshot({ path: `.qa/home-${width}.png`, fullPage: true });
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.locator('.ribbon').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => document.querySelector('.ribbon')?.dataset.phase === 'travel');
+  await page.waitForFunction(() => document.querySelector('.ribbon')?.dataset.phase === 'hold');
+  const image = () => page.locator('.ribbon canvas').evaluate(canvas => canvas.toDataURL());
+  const a = await image(); await page.waitForTimeout(250); const b = await image();
+  report.motion.ribbonHolds = a === b;
+  if (!report.motion.ribbonHolds) throw new Error('Ribbon does not hold the centered word.');
+  await page.waitForFunction(() => document.querySelector('.ribbon')?.dataset.phase === 'travel');
+  await page.waitForTimeout(350);
+  report.motion.ribbonMoves = a !== await image();
+  if (!report.motion.ribbonMoves) throw new Error('Ribbon does not advance between stops.');
+  await page.locator('.motion-toggle').click();
+  await page.locator('.ribbon').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(120);
+  const paused = await image(); await page.waitForTimeout(250);
+  report.motion.pauseWorks = paused === await image();
+  if (!report.motion.pauseWorks) throw new Error('Pause did not stop the canvas.');
+  await page.screenshot({ path: '.qa/ribbon.png' });
+  await page.locator('.lineup-art').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: '.qa/hourglass.png' });
+  await page.locator('.motion-toggle').click();
+  await page.locator('.lineup-art').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(150);
+  const verticalImage = () => page.locator('.lineup-art canvas').evaluate(canvas => canvas.toDataURL());
+  const vertical = await verticalImage(); await page.waitForTimeout(250);
+  report.motion.verticalMoves = vertical !== await verticalImage();
+  if (!report.motion.verticalMoves) throw new Error('Vertical lettering does not move.');
+  await page.locator('.orbit-art').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(150);
+  const orbitImage=()=>page.locator('.orbit-art canvas').evaluate(canvas=>canvas.toDataURL());
+  const orbit=await orbitImage();await page.waitForTimeout(250);
+  report.motion.orbitMoves=orbit!==await orbitImage();
+  if(!report.motion.orbitMoves)throw new Error('Orbit does not move.');
+  await page.screenshot({path:'.qa/orbit.png'});
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.waitForTimeout(600);
+  await page.waitForFunction(()=>document.querySelector('.oval-lockup').getAnimations().length===0);
+  await page.mouse.move(600, 350);
+  await page.waitForTimeout(100);
+  report.motion.scatterWorks = await page.locator('.pixel-overlay').evaluate(canvas => {
+    const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) return true;
+    return false;
+  });
+  await page.screenshot({ path: '.qa/scatter.png' });
+  await page.waitForTimeout(2300);
+  report.motion.scatterReassembles = await page.locator('.pixel-overlay').evaluate(canvas => {
+    const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) return false;
+    return true;
+  });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForTimeout(150);
+  const reduced = await image(); await page.waitForTimeout(250);
+  report.motion.reducedMotionWorks = reduced === await image();
+  report.errors = errors;
+  report.artists=await page.locator('.artist-name').allTextContents();
+  if(report.artists.length!==4)throw new Error('Expected four artists.');
+  if(errors.length) throw new Error(errors.join('\n'));
+  if(!report.motion.scatterWorks || !report.motion.scatterReassembles || !report.motion.reducedMotionWorks) throw new Error(JSON.stringify(report));
+  console.log(JSON.stringify(report, null, 2));
+} finally { await browser.close(); }

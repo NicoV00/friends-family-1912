@@ -1,0 +1,39 @@
+---
+import FestivalPoster from '../components/FestivalPoster.astro';
+import '../styles/global.css';
+import { getCollection } from 'astro:content';
+const lineup=(await getCollection('artists')).sort((a,b)=>a.data.order-b.data.order).filter(a=>!/^ARTISTA/i.test(a.data.name)).map(a=>a.data);
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#99a3aa" />
+    <link rel="preload" href="/fonts/FasePressure-Black.woff2?v=4" as="font" type="font/woff2" crossorigin />
+    <title>FASE — Póster — 19.12.26</title>
+  </head>
+  <body class="poster-export">
+    <h1 class="sr-only">Viernes 19 de diciembre, 23:59. Emile, Montevideo.</h1>
+    <FestivalPoster lineup={lineup} />
+    <script is:inline>
+      const format = new URLSearchParams(location.search).get('f');
+      document.documentElement.dataset.format = ['post', 'story', 'a2'].includes(format) ? format : 'post';
+      document.fonts.ready.then(() => { document.documentElement.dataset.posterReady = 'true'; });
+    </script>
+  </body>
+</html>
+<style is:global>
+  .poster-export{width:100vw;height:100svh;overflow:hidden}
+  .poster-export .festival-poster{height:100svh;min-height:0;padding:4%}
+  .poster-export .pressure-lockup{width:100%;max-width:none;margin:auto 0}
+  .poster-export .main-lettering{height:66svh}
+  .poster-export .poster-kicker{font-size:clamp(12px,1.8vw,32px)}
+  .poster-export .poster-base{font-size:clamp(12px,1.8vw,32px);grid-template-columns:27% 1fr auto;gap:3%;margin-top:0}
+  .poster-export .date-seal{width:100%}
+  .poster-export .poster-base-year{display:block}
+  .poster-export .poster-lineup{display:flex;flex-wrap:wrap;justify-content:center;gap:.1em .5em;font:clamp(20px,4.2vw,72px)/1.05 'Fase Pressure',sans-serif;letter-spacing:-.045em;margin:0 0 3%}
+  .poster-export .poster-lineup small{font:700 .24em/1 Arial,sans-serif;vertical-align:top;margin:.5em 0 0 .5em;display:inline-block}
+  [data-format=story] .poster-export .main-lettering{height:62svh}
+</style>
